@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, RefreshCw, User, Hash, Phone, Mail, MapPin, Calendar, CreditCard, Building2, Heart, Users, FileJson, Download, CreditCard as CardIcon } from 'lucide-react'
+import { Copy, RefreshCw, User, Hash, Phone, Mail, MapPin, Calendar, CreditCard, Building2, Heart, Users, FileJson, Download, CreditCard as CardIcon, BookOpen } from 'lucide-react'
 import { generateIdentity, type ChileanIdentity, type Gender, REGIONS } from '@/utils/chilean-data'
 import * as XLSX from 'xlsx'
+import Link from 'next/link'
 
 export default function Home() {
   const [identity, setIdentity] = useState<ChileanIdentity | null>(null)
@@ -131,7 +132,15 @@ export default function Home() {
     <main className="min-h-screen bg-neutral-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <header className="mb-8 text-center">
+        <header className="mb-8 text-center relative">
+          <Link
+            href="/api-docs"
+            className="absolute top-0 right-0 inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-200 text-xs sm:text-sm font-sans text-neutral-300 hover:text-white"
+          >
+            <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">API Docs</span>
+            <span className="sm:hidden">API</span>
+          </Link>
           <h1 className="text-4xl font-bold text-white mb-2 font-sans tracking-tight">
             ChileGen
           </h1>
