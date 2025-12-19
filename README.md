@@ -7,7 +7,7 @@
 🔗 **Sitio Web:** [https://chilegen.cl](https://chilegen.cl)
 📚 **Documentación API:** [https://chilegen.cl/api-docs](https://chilegen.cl/api-docs)
 
-![Screenshot de ChileGen](public/screenshot.png)
+![Screenshot de ChileGen](public/imagen.png)
 
 ---
 
