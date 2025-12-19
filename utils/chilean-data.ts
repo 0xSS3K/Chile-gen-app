@@ -48,7 +48,7 @@ const SURNAMES = [
 ];
 
 // Chilean regions and communes
-const REGIONS = [
+export const REGIONS = [
   { name: 'Región de Arica y Parinacota', communes: ['Arica', 'Camarones', 'Putre', 'General Lagos'] },
   { name: 'Región de Tarapacá', communes: ['Iquique', 'Alto Hospicio', 'Pozo Almonte', 'Pica'] },
   { name: 'Región de Antofagasta', communes: ['Antofagasta', 'Calama', 'Tocopilla', 'Mejillones'] },
@@ -172,8 +172,15 @@ export function generateName(gender: Gender = 'Random'): string {
 }
 
 // Generate a random Chilean address
-export function generateAddress(): string {
-  const region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
+export function generateAddress(regionName?: string): string {
+  let region;
+  if (regionName) {
+    region = REGIONS.find(r => r.name === regionName);
+  }
+  if (!region) {
+    region = REGIONS[Math.floor(Math.random() * REGIONS.length)];
+  }
+  
   const commune = region.communes[Math.floor(Math.random() * region.communes.length)];
   const streetType = STREET_TYPES[Math.floor(Math.random() * STREET_TYPES.length)];
   const streetName = STREET_NAMES[Math.floor(Math.random() * STREET_NAMES.length)];
@@ -215,34 +222,235 @@ export function generateEmail(name: string): string {
   return `${cleanName}${randomNum}@${domain}`;
 }
 
+// Health insurance (Previsión)
+const HEALTH_INSURANCES = ['Fonasa A', 'Fonasa B', 'Fonasa C', 'Fonasa D'];
+const ISAPRES = ['Colmena', 'Consalud', 'Cruz Blanca', 'Banmédica', 'Vida Tres', 'Nueva Masvida', 'Río Blanco'];
+
+export function generateHealthInsurance(): string {
+  const isFonasa = Math.random() > 0.4; // 60% Fonasa, 40% Isapre
+  if (isFonasa) {
+    return HEALTH_INSURANCES[Math.floor(Math.random() * HEALTH_INSURANCES.length)];
+  }
+  return `Isapre ${ISAPRES[Math.floor(Math.random() * ISAPRES.length)]}`;
+}
+
+// AFP (Pension funds)
+const AFPS = ['Capital', 'Cuprum', 'Habitat', 'Modelo', 'Planvital', 'Provida', 'Uno'];
+
+export function generateAFP(): string {
+  return AFPS[Math.floor(Math.random() * AFPS.length)];
+}
+
+// Marital status
+export type MaritalStatus = 'Soltero' | 'Casado' | 'Divorciado' | 'Viudo' | 'AUC';
+
+export function generateMaritalStatus(): MaritalStatus {
+  const statuses: MaritalStatus[] = ['Soltero', 'Casado', 'Divorciado', 'Viudo', 'AUC'];
+  // Weighted probabilities (more single and married)
+  const weights = [0.35, 0.40, 0.10, 0.05, 0.10];
+  const random = Math.random();
+  let cumulative = 0;
+  
+  for (let i = 0; i < statuses.length; i++) {
+    cumulative += weights[i];
+    if (random < cumulative) {
+      return statuses[i];
+    }
+  }
+  return statuses[0];
+}
+
+// Blood type
+const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+export function generateBloodType(): string {
+  return BLOOD_TYPES[Math.floor(Math.random() * BLOOD_TYPES.length)];
+}
+
+// Banks
+const BANKS = ['BancoEstado', 'Santander', 'Banco de Chile', 'BCI'];
+const ACCOUNT_TYPES = ['Cuenta Corriente', 'Cuenta Vista', 'Cuenta RUT'];
+
+export interface BankAccount {
+  bank: string;
+  accountType: string;
+  accountNumber: string;
+}
+
+export function generateBankAccount(rut: string): BankAccount {
+  const bank = BANKS[Math.floor(Math.random() * BANKS.length)];
+  const accountType = ACCOUNT_TYPES[Math.floor(Math.random() * ACCOUNT_TYPES.length)];
+  
+  let accountNumber: string;
+  
+  // Special rule: BancoEstado + Cuenta RUT = RUT without verification digit
+  if (bank === 'BancoEstado' && accountType === 'Cuenta RUT') {
+    // Extract RUT number without verification digit
+    const rutNumber = rut.split('-')[0].replace(/\./g, '');
+    accountNumber = rutNumber;
+  } else {
+    // Generate random account number (10-12 digits)
+    const length = Math.floor(Math.random() * 3) + 10; // 10, 11, or 12 digits
+    accountNumber = Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, '0');
+  }
+  
+  return {
+    bank,
+    accountType,
+    accountNumber
+  };
+}
+
+// Credit card generation using Luhn algorithm
+export interface CreditCard {
+  number: string;
+  brand: 'Visa' | 'Mastercard';
+  cvv: string;
+  expiryMonth: string;
+  expiryYear: string;
+}
+
+// Luhn algorithm for credit card validation
+function luhnCheck(digits: string): boolean {
+  let sum = 0;
+  let isEven = false;
+  
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i]);
+    
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    isEven = !isEven;
+  }
+  
+  return sum % 10 === 0;
+}
+
+// Generate a valid credit card number using Luhn algorithm
+function generateLuhnCardNumber(prefix: string, length: number): string {
+  let cardNumber = prefix;
+  
+  // Generate random digits except the last one
+  while (cardNumber.length < length - 1) {
+    cardNumber += Math.floor(Math.random() * 10).toString();
+  }
+  
+  // Calculate check digit using Luhn algorithm
+  let sum = 0;
+  let isEven = false;
+  
+  for (let i = cardNumber.length - 1; i >= 0; i--) {
+    let digit = parseInt(cardNumber[i]);
+    
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    isEven = !isEven;
+  }
+  
+  const checkDigit = (10 - (sum % 10)) % 10;
+  cardNumber += checkDigit.toString();
+  
+  return cardNumber;
+}
+
+export function generateCreditCard(): CreditCard {
+  const isVisa = Math.random() > 0.5;
+  const brand: 'Visa' | 'Mastercard' = isVisa ? 'Visa' : 'Mastercard';
+  
+  // Visa starts with 4, Mastercard with 51-55
+  const prefix = isVisa 
+    ? '4' 
+    : `5${Math.floor(Math.random() * 5) + 1}`; // 51-55
+  
+  const cardNumber = generateLuhnCardNumber(prefix, 16);
+  
+  // Format card number with spaces every 4 digits
+  const formattedNumber = cardNumber.match(/.{1,4}/g)?.join(' ') || cardNumber;
+  
+  // Generate CVV (3 digits)
+  const cvv = Math.floor(Math.random() * 900 + 100).toString();
+  
+  // Generate expiry date (next 1-5 years)
+  const currentYear = new Date().getFullYear();
+  const expiryYear = currentYear + Math.floor(Math.random() * 5) + 1;
+  const expiryMonth = Math.floor(Math.random() * 12) + 1;
+  
+  return {
+    number: formattedNumber,
+    brand,
+    cvv,
+    expiryMonth: expiryMonth.toString().padStart(2, '0'),
+    expiryYear: expiryYear.toString().slice(-2)
+  };
+}
+
 // Generate a complete Chilean identity
 export interface ChileanIdentity {
+  // Basic data
   name: string;
   rut: string;
   phone: string;
   email: string;
   address: string;
   age: number;
+  
+  // Advanced data (optional)
+  healthInsurance?: string;
+  afp?: string;
+  maritalStatus?: MaritalStatus;
+  bloodType?: string;
+  bankAccount?: BankAccount;
+  creditCard?: CreditCard;
 }
 
 export interface GenerationOptions {
   age?: number;
   gender?: Gender;
+  region?: string;
+  includeAdvanced?: boolean;
 }
 
 export function generateIdentity(options: GenerationOptions = {}): ChileanIdentity {
   // Default age if not provided: random between 18-70
   const age = options.age ?? Math.floor(Math.random() * (70 - 18 + 1)) + 18;
   const gender = options.gender ?? 'Random';
+  const includeAdvanced = options.includeAdvanced ?? false;
   
   const name = generateName(gender);
-  return {
+  const rut = generateRUT(age);
+  const address = generateAddress(options.region);
+  
+  const identity: ChileanIdentity = {
     name,
-    rut: generateRUT(age),
+    rut,
     phone: generatePhone(),
     email: generateEmail(name),
-    address: generateAddress(),
+    address,
     age,
   };
+  
+  // Add advanced data if requested
+  if (includeAdvanced) {
+    identity.healthInsurance = generateHealthInsurance();
+    identity.afp = generateAFP();
+    identity.maritalStatus = generateMaritalStatus();
+    identity.bloodType = generateBloodType();
+    identity.bankAccount = generateBankAccount(rut);
+    identity.creditCard = generateCreditCard();
+  }
+  
+  return identity;
 }
 
