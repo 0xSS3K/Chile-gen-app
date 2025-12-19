@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@upstash/ratelimit": "^2.0.7",
+    "@upstash/redis": "^1.35.8",
     "lucide-react": "^0.344.0",
     "next": "^14.2.0",
     "react": "^18.3.0",
